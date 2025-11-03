@@ -1,0 +1,13 @@
+bundle:
+  name: training-pipeline-bundle
+
+resources:
+  jobs:
+    train_model_job:
+      name: train_model_job
+      tasks:
+        - task_key: train_model
+          existing_cluster_id: "1103-122204-fqtyflyh"
+
+          notebook_task:
+            notebook_path: /Repos/your_user/train_model_notebook

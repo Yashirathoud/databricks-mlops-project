@@ -1,0 +1,39 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.log
+
+# --- Virtual environment ---
+.venv/
+env/
+venv/
+ENV/
+
+# --- Databricks specific ---
+.databricks/
+dbfs/
+*.dbc
+*.dbc.zip
+
+# --- VSCode ---
+.vscode/
+*.code-workspace
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- PySpark or MLflow artifacts ---
+mlruns/
+models/
+spark-warehouse/
+.derby/
+
+# --- Temporary or cache folders ---
+.cache/
+.tmp/
+*.tmp

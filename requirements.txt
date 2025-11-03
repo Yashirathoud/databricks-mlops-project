@@ -1,0 +1,14 @@
+# Dependencies for Databricks ML pipelines (Training and Inference)
+
+# Core ML/Data Libraries
+mlflow>=2.13.0          # Essential for logging, tracking, and model registration
+scikit-learn>=1.4.2     # Used for RandomForest, LabelEncoder, and train_test_split
+numpy>=1.26.0           # Core mathematical and array operations (used for float64 fix)
+pandas>=2.2.0           # Used for local data manipulation in inference notebook
+
+# Image Processing Library
+Pillow>=10.3.0          # Used for reading, resizing, and converting image content (PIL)
+
+# Utilities (Often pre-installed on Databricks MLR, but good practice to include)
+joblib                  # Used for dumping/loading the LabelEncoder artifact
+pyspark                 # Required if you run your notebooks locally with Databricks Connect
