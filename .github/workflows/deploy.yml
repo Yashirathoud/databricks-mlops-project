@@ -21,6 +21,11 @@ jobs:
       - name: Install Databricks CLI (latest via winget)
         run: |
           winget install -e --id Databricks.DatabricksCLI --accept-package-agreements --accept-source-agreements
+          echo "✅ Databricks CLI installed."
+          echo "PATH before refresh:"
+          echo $env:PATH
+          # Refresh PATH for the current session
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
           databricks version
 
       - name: Authenticate with Databricks
