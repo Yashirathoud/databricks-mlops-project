@@ -31,3 +31,12 @@ python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 ```
  databricks configure --token
+
+
+
+### New changes in code files then:
+```powershell
+
+git add .
+git commit -m "message"
+git push -u origin main 
