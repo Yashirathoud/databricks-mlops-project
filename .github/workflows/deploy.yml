@@ -18,10 +18,12 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install NEW Databricks CLI
+      - name: Install NEW Databricks CLI (v0.208.0+)
         run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/cli/main/install.sh | bash
-          databricks version
+          pip install --upgrade pip
+          pip install databricks-cli==0.208.0
+          databricks --version
+
 
       - name: Authenticate to Databricks
         run: |
