@@ -7,10 +7,10 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,22 +18,19 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install NEW Databricks CLI (v0.208.0+)
+      - name: Install Databricks CLI (latest via winget)
         run: |
-          pip install --upgrade pip
-          pip install databricks-cli==0.208.0
-          databricks --version
+          winget install -e --id Databricks.DatabricksCLI --accept-package-agreements --accept-source-agreements
+          databricks version
 
-
-      - name: Authenticate to Databricks
+      - name: Authenticate with Databricks
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
-          databricks auth login --host ${{ secrets.DATABRICKS_HOST }} --token ${{ secrets.DATABRICKS_TOKEN }}
+          databricks auth login --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
 
-      - name: Validate bundle
-        run: databricks bundle validate
-
-      - name: Deploy bundle
-        run: databricks bundle deploy
-
-      - name: Run job
-        run: databricks bundle run
+      - name: Deploy Databricks Bundle
+        run: |
+          databricks bundle validate
+          databricks bundle deploy
