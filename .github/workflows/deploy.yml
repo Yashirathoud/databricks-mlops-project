@@ -13,18 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Databricks CLI via winget
-        run: |
-          winget install --id Databricks.DatabricksCLI --accept-source-agreements --accept-package-agreements
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-      - name: Add Databricks CLI to PATH
+      - name: Install Databricks CLI (PyPI)
         shell: pwsh
         run: |
-          $cliPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Databricks.DatabricksCLI_*"
-          $exePath = (Get-ChildItem -Path $cliPath -Recurse -Filter "databricks.exe" | Select-Object -First 1).Directory.FullName
-          echo "Found Databricks CLI at: $exePath"
-          echo "$exePath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          databricks version
+          python -m pip install --upgrade pip
+          pip install databricks-cli
+          databricks --version
 
       - name: Authenticate with Databricks
         shell: pwsh
@@ -39,4 +38,3 @@ jobs:
         run: |
           databricks bundle validate
           databricks bundle deploy
-
