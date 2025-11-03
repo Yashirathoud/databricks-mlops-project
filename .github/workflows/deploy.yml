@@ -38,59 +38,52 @@ jobs:
           pip install -r requirements.txt || echo "No requirements.txt found, skipping."
 
       # -----------------------------
-      # 4. Install and authenticate Databricks CLI
+      # 4. Install Databricks CLI using WinGet
       # -----------------------------
-      - name: Install and authenticate Databricks CLI (Windows)
+      - name: Install Databricks CLI via WinGet
+        shell: pwsh
+        run: |
+          Write-Host "Installing Databricks CLI..."
+          winget install --id Databricks.DatabricksCLI -e --accept-source-agreements --accept-package-agreements
+
+          # Reload PATH so new CLI becomes available in this same step
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          Write-Host "✅ Reloaded PATH."
+
+          # Verify CLI version
+          databricks -v
+
+      # -----------------------------
+      # 5. Authenticate Databricks CLI (new syntax)
+      # -----------------------------
+      - name: Authenticate Databricks CLI
         shell: pwsh
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
-          Write-Host "Installing Databricks CLI via WinGet..."
-          winget install --id Databricks.DatabricksCLI -e --accept-source-agreements --accept-package-agreements
-
-          # Locate Databricks CLI path
-          $cliPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Databricks.DatabricksCLI_Microsoft.Winget.Source_8wekyb3d8bbwe"
-
-          # Add CLI path to GitHub PATH for next steps
-          if (Test-Path $cliPath) {
-            echo "✅ CLI path found: $cliPath"
-            echo "$cliPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          } else {
-            echo "⚠️ Could not find CLI path, searching manually..."
-            Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\" | Where-Object { $_.Name -like "*Databricks*" }
-          }
-
-          # Confirm CLI version
-          databricks -v
-
-          # Authenticate with token
-          databricks auth login --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
+          # Reload PATH in every new step
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          Write-Host "🔐 Authenticating with Databricks..."
+          databricks configure set --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
+          databricks current-user me
 
       # -----------------------------
-      # 5. Validate Databricks connection
+      # 6. Verify connection
       # -----------------------------
-      - name: Verify Databricks CLI authentication
+      - name: Verify Databricks workspace access
         shell: pwsh
         run: |
-          databricks workspace list || echo "Workspace listing failed"
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          databricks workspace list /
 
       # -----------------------------
-      # 6. (Optional) Run ML pipeline
+      # 7. (Optional) Run ML job or bundle
       # -----------------------------
-      - name: Run Databricks notebook or ML job
+      - name: Trigger Databricks ML job
         shell: pwsh
         run: |
-          Write-Host "Triggering Databricks job..."
-          # Example: replace this with your actual bundle command or notebook path
-          # databricks jobs run-now --job-id <your_job_id>
-          # OR
-          # databricks bundle deploy
-          echo "✅ Databricks job triggered successfully."
-
-      # -----------------------------
-      # 7. (Optional) Clean up or log results
-      # -----------------------------
-      - name: Print final status
-        run: |
-          echo "Pipeline completed successfully 🎉"
+          Write-Host "🚀 Triggering Databricks job..."
+          # Example: replace this with your real command
+          # databricks jobs run-now --job-id <job_id>
+          echo "✅ Databricks pipeline completed."
