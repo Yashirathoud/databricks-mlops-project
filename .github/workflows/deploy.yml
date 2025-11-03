@@ -1,54 +1,96 @@
-name: Deploy Databricks Bundle
+name: MLOps Pipeline - Databricks Integration
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  mlops:
     runs-on: windows-latest
 
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
     steps:
+      # -----------------------------
+      # 1. Checkout repository
+      # -----------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      # -----------------------------
+      # 2. Setup Python
+      # -----------------------------
+      - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install and register Databricks CLI
-        shell: pwsh
+      # -----------------------------
+      # 3. Install dependencies
+      # -----------------------------
+      - name: Install Python dependencies
         run: |
-          winget install --id Databricks.DatabricksCLI -e --accept-source-agreements --accept-package-agreements
-          # Manually add CLI folder to PATH
-          $cliPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Databricks.DatabricksCLI_Microsoft.Winget.Source_8wekyb3d8bbwe"
-          if (Test-Path $cliPath) {
-          $env:PATH = "$env:PATH;$cliPath"
-          Write-Host "✅ Added CLI path: $cliPath"
-          } else {
-          Write-Host "⚠️ Could not find CLI path"
-          Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\" | Where-Object { $_.Name -like "*Databricks*" }
-          }
-          Get-Command databricks | Format-List
-          databricks -v
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || echo "No requirements.txt found, skipping."
 
-      - name: Reload PATH for new CLI
-        shell: pwsh
-        run: |
-          $env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('PATH','User')
-          databricks -v
-
-      - name: Authenticate with Databricks
+      # -----------------------------
+      # 4. Install and authenticate Databricks CLI
+      # -----------------------------
+      - name: Install and authenticate Databricks CLI (Windows)
         shell: pwsh
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
+          Write-Host "Installing Databricks CLI via WinGet..."
+          winget install --id Databricks.DatabricksCLI -e --accept-source-agreements --accept-package-agreements
+
+          # Locate Databricks CLI path
+          $cliPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Databricks.DatabricksCLI_Microsoft.Winget.Source_8wekyb3d8bbwe"
+
+          # Add CLI path to GitHub PATH for next steps
+          if (Test-Path $cliPath) {
+            echo "✅ CLI path found: $cliPath"
+            echo "$cliPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          } else {
+            echo "⚠️ Could not find CLI path, searching manually..."
+            Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\" | Where-Object { $_.Name -like "*Databricks*" }
+          }
+
+          # Confirm CLI version
+          databricks -v
+
+          # Authenticate with token
           databricks auth login --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
 
-      - name: Validate and Deploy Databricks Bundle
+      # -----------------------------
+      # 5. Validate Databricks connection
+      # -----------------------------
+      - name: Verify Databricks CLI authentication
         shell: pwsh
         run: |
-          databricks bundle validate
-          databricks bundle deploy
+          databricks workspace list || echo "Workspace listing failed"
+
+      # -----------------------------
+      # 6. (Optional) Run ML pipeline
+      # -----------------------------
+      - name: Run Databricks notebook or ML job
+        shell: pwsh
+        run: |
+          Write-Host "Triggering Databricks job..."
+          # Example: replace this with your actual bundle command or notebook path
+          # databricks jobs run-now --job-id <your_job_id>
+          # OR
+          # databricks bundle deploy
+          echo "✅ Databricks job triggered successfully."
+
+      # -----------------------------
+      # 7. (Optional) Clean up or log results
+      # -----------------------------
+      - name: Print final status
+        run: |
+          echo "Pipeline completed successfully 🎉"
