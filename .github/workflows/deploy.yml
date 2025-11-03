@@ -17,11 +17,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Databricks CLI via WinGet
+      - name: Install and register Databricks CLI
         shell: pwsh
         run: |
           winget install --id Databricks.DatabricksCLI -e --accept-source-agreements --accept-package-agreements
-          Write-Host "✅ Databricks CLI installed via WinGet"
+          # Manually add CLI folder to PATH
+          $cliPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Databricks.DatabricksCLI_Microsoft.Winget.Source_8wekyb3d8bbwe"
+          if (Test-Path $cliPath) {
+          $env:PATH = "$env:PATH;$cliPath"
+          Write-Host "✅ Added CLI path: $cliPath"
+          } else {
+          Write-Host "⚠️ Could not find CLI path"
+          Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\" | Where-Object { $_.Name -like "*Databricks*" }
+          }
+          Get-Command databricks | Format-List
+          databricks -v
 
       - name: Reload PATH for new CLI
         shell: pwsh
