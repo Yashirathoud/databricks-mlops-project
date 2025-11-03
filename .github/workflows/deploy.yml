@@ -22,8 +22,8 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          pip install databricks-cli
-          databricks --version
+          pip install "databricks==0.221.0"
+          databricks version
 
       - name: Authenticate with Databricks
         shell: pwsh
