@@ -87,3 +87,14 @@ jobs:
           # Example: replace this with your real command
           # databricks jobs run-now --job-id <job_id>
           echo "✅ Databricks pipeline completed."
+
+            # -----------------------------
+      # 8. Deploy Databricks Bundle
+      # -----------------------------
+      - name: Deploy Databricks Bundle
+        shell: pwsh
+        run: |
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          Write-Host "📦 Deploying Databricks bundle..."
+          databricks bundle deploy
+          Write-Host "✅ Deployment completed."
