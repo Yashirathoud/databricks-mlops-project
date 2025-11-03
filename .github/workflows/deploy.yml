@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -18,14 +18,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Databricks CLI (latest via winget)
+      - name: Install Databricks CLI (latest)
         run: |
-          winget install -e --id Databricks.DatabricksCLI --accept-package-agreements --accept-source-agreements
+          curl -fsSL https://raw.githubusercontent.com/databricks/cli/main/install.sh | bash
           echo "✅ Databricks CLI installed."
-          echo "PATH before refresh:"
-          echo $env:PATH
-          # Refresh PATH for the current session
-          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
           databricks version
 
       - name: Authenticate with Databricks
@@ -33,9 +29,9 @@ jobs:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
-          databricks auth login --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
+          databricks auth login --host $DATABRICKS_HOST --token $DATABRICKS_TOKEN
 
-      - name: Deploy Databricks Bundle
+      - name: Validate and Deploy Databricks Bundle
         run: |
           databricks bundle validate
           databricks bundle deploy
