@@ -18,23 +18,22 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Databricks CLI
+      - name: Install Databricks CLI via winget
         run: |
           winget install Databricks.DatabricksCLI --silent --accept-source-agreements --accept-package-agreements
 
-      - name: Reload PATH and check Databricks CLI
+      - name: Verify Databricks CLI Installation
         run: |
-          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
-          Start-Process powershell -ArgumentList "-NoProfile -Command databricks version"
+          pwsh -Command "databricks version"
 
       - name: Authenticate with Databricks
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
-          databricks auth login --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
+          pwsh -Command "databricks auth login --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN"
 
-      - name: Validate and Deploy Bundle
+      - name: Validate and Deploy Databricks Bundle
         run: |
-          databricks bundle validate
-          databricks bundle deploy
+          pwsh -Command "databricks bundle validate"
+          pwsh -Command "databricks bundle deploy"
