@@ -44,26 +44,28 @@ jobs:
       - name: Install Databricks CLI via WinGet
         shell: pwsh
         run: |
-          Write-Host "Installing Databricks CLI..."
+          Write-Host "📦 Installing Databricks CLI..."
           winget install --id Databricks.DatabricksCLI -e --accept-source-agreements --accept-package-agreements
 
           # Reload PATH so CLI becomes available immediately
           $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
-          Write-Host "✅ Reloaded PATH."
-
-          # Verify CLI version
           databricks -v
+          Write-Host "✅ Databricks CLI installed and verified."
 
       # -----------------------------
       # 5. Authenticate Databricks CLI
       # -----------------------------
       - name: Authenticate Databricks CLI
         shell: pwsh
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
+          Write-Host "🔐 Authenticating Databricks CLI..."
           $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
-          Write-Host "🔐 Authenticating with Databricks..."
           databricks configure set --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
           databricks current-user me
+          Write-Host "✅ Authenticated successfully."
 
       # -----------------------------
       # 6. Verify workspace connection
@@ -71,8 +73,10 @@ jobs:
       - name: Verify Databricks workspace access
         shell: pwsh
         run: |
+          Write-Host "🔍 Verifying Databricks workspace..."
           $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
           databricks workspace list /
+          Write-Host "✅ Workspace verified."
 
       # -----------------------------
       # 7. Deploy Databricks Bundle (CI/CD)
@@ -80,18 +84,26 @@ jobs:
       - name: Deploy Databricks Bundle
         shell: pwsh
         run: |
+          Write-Host "🚀 Deploying Databricks bundle..."
           $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
-          Write-Host "📦 Deploying Databricks bundle..."
           databricks bundle deploy
           Write-Host "✅ Deployment completed."
 
       # -----------------------------
       # 8. Trigger Databricks Job (CD)
       # -----------------------------
-      - name: 🚀 Trigger Databricks job
+      - name: 🚀 Trigger Databricks Job
         shell: pwsh
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_JOB_ID: ${{ secrets.DATABRICKS_JOB_ID }}
         run: |
-          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
           Write-Host "🚀 Running Databricks job..."
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+
+          # Authenticate and trigger
+          databricks configure set --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
           databricks jobs run-now --job-id $env:DATABRICKS_JOB_ID
+
           Write-Host "✅ Databricks job triggered successfully!"
