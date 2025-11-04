@@ -99,12 +99,17 @@ jobs:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
           DATABRICKS_JOB_ID: ${{ secrets.DATABRICKS_JOB_ID }}
         run: |
-          Write-Host "🚀 Running Databricks job..."
-          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          # Write-Host "🚀 Running Databricks job..."
+          # $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
 
           # Authenticate and trigger
-          databricks configure set --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
-          databricks jobs run-now $env:DATABRICKS_JOB_ID
+          # databricks configure set --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
+          # databricks jobs run-now $env:DATABRICKS_JOB_ID
 
+          # Write-Host "✅ Databricks job triggered successfully!"
+
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          Write-Host "🚀 Running Databricks job..."
+          Write-Host "🔹 Using Job ID: $env:DATABRICKS_JOB_ID"
+          databricks jobs run-now "$($env:DATABRICKS_JOB_ID)"
           Write-Host "✅ Databricks job triggered successfully!"
-
