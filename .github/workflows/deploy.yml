@@ -104,7 +104,7 @@ jobs:
 
           # Authenticate and trigger
           databricks configure set --host $env:DATABRICKS_HOST --token $env:DATABRICKS_TOKEN
-          databricks jobs run-now --job-id $env:DATABRICKS_JOB_ID
+          databricks jobs run-now $env:DATABRICKS_JOB_ID
 
           Write-Host "✅ Databricks job triggered successfully!"
 
