@@ -112,4 +112,4 @@ jobs:
           Write-Host "🚀 Running Databricks job..."
           Write-Host "🔹 Using Job ID: $env:DATABRICKS_JOB_ID"
           databricks jobs run-now "$($env:DATABRICKS_JOB_ID)"
-          Write-Host "✅ Databricks job triggered successfully!"
+          Write-Host "✅ dddDatabricks job triggered successfully!"
